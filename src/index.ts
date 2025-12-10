@@ -14,6 +14,25 @@ type Props = {
 	accessToken: string;
 };
 
+interface Project {
+	id: string;
+	name: string;
+	description: string;
+	createdAt: string;
+	updatedAt: string;
+}
+
+interface Todo {
+	id: string;
+	projectId: string;
+	title: string;
+	description: string;
+	status: "pending" | "in_progress" | "completed";
+	priority: "low" | "medium" | "high";
+	createdAt: string;
+	updatedAt: string;
+}
+
 const ALLOWED_USERNAMES = new Set<string>([
 	// Add GitHub usernames of users who should have access to the image generation tool
 	// For example: 'yourusername', 'coworkerusername'
@@ -21,9 +40,61 @@ const ALLOWED_USERNAMES = new Set<string>([
 
 export class MyMCP extends McpAgent<Env, Record<string, never>, Props> {
 	server = new McpServer({
-		name: "Github OAuth Proxy Demo",
+		name: "Project Planner With Auth",
 		version: "1.0.0",
 	});
+
+	private get KV(): KVNamespace {
+		return (this.env as Env).PROJECT_PLANNER_STORE_WITH_AUTH;
+	}
+
+	private async getProjectList(): Promise<string[]> {
+		const listData = await this.KV.get("project:list");
+		// const listData = await (this.env as Env).PROJECT_PLANNER_STORE.get("project:list");
+		return listData ? JSON.parse(listData) : [];
+		// Only get the whole string value of the json object, still need to extract each one individually.
+	}
+
+	private async getTodoList(projectId: string): Promise<string[]> {
+		const listData = await this.KV.get(`project:${projectId}:todos`);
+		// const listData = await (this.env as Env).PROJECT_PLANNER_STORE.get(`project:${projectId}:todo:list`);
+		return listData ? JSON.parse(listData) : [];
+	}
+
+	private async getTodosByProject(projectId: string): Promise<Todo[]> {	
+		const todoList = await this.getTodoList(projectId);
+		const todos: Todo[] = [];
+		for (const todoId of todoList) {
+			const todoData = await this.KV.get(`todo:${todoId}`);
+			if (todoData) {
+				todos.push(JSON.parse(todoData));
+			}
+		}
+		return todos;
+	}
+
+	// private async addTodo(projectId: string, todo: Todo): Promise<void> {
+	// 	const todoList = await this.getTodoList(projectId);
+	// 	todoList.push(todo.id);
+	// 	await this.KV.put(`project:${projectId}:todos`, JSON.stringify(todoList));
+	// }
+
+	// private async updateTodo(projectId: string, todoId: string, todo: Todo): Promise<void> {
+	// 	const todoList = await this.getTodoList(projectId);
+	// 	const index = todoList.indexOf(todoId);
+	// 	if (index !== -1) {
+	// 		todoList[index] = todo.id;
+	// 	}
+	// }
+
+	private async deleteTodo(projectId: string, todoId: string): Promise<void> {
+		const todoList = await this.getTodoList(projectId);
+		const index = todoList.indexOf(todoId);
+		if (index !== -1) {
+			todoList.splice(index, 1);
+		}
+		await this.KV.put(`project:${projectId}:todos`, JSON.stringify(todoList));
+	}
 
 	async init() {
 		// Hello, world!
@@ -84,6 +155,8 @@ export class MyMCP extends McpAgent<Env, Record<string, never>, Props> {
 					};
 				},
 			);
+
+
 		}
 	}
 }

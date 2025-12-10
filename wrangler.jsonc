@@ -42,8 +42,18 @@
 	"kv_namespaces": [
 		{
 			"binding": "OAUTH_KV",
-			"id": "<Add-KV-ID>"
+			"id": "e52bb829b05e4bb8b967b38acd9341da",
+			"remote": true
+		},
+		{
+			"binding": "PROJECT_PLANNER_STORE_WITH_AUTH",
+			"id": "2851da817c5a4890887b69ec7f39bbbe",
+			"remote": true
 		}
+		// {
+		// 	"binding": "OAUTH_KV",
+		// 	"id": "<Add-KV-ID>"
+		// }
 	],
 	"ai": {
 		"binding": "AI"
