@@ -36,7 +36,6 @@ interface Todo {
 const ALLOWED_USERNAMES = new Set<string>([
 	// Add GitHub usernames of users who should have access to the image generation tool
 	// For example: 'yourusername', 'coworkerusername'
-	"hubiao1688",
 	"ermao1688",
 ]);
 
@@ -186,7 +185,7 @@ export class MyMCP extends McpAgent<Env, Record<string, never>, Props> {
 
 					const projectList = await this.getProjectList();
 					projectList.push(projectId);
-					await this.KV.put("project:user-${this.props!.login}:list", JSON.stringify(projectList));
+					await this.KV.put(`project:user-${this.props!.login}:list`, JSON.stringify(projectList));
 
 					return {
 						content: [
@@ -291,7 +290,7 @@ export class MyMCP extends McpAgent<Env, Record<string, never>, Props> {
 					if (index !== -1) {
 						projectList.splice(index, 1); // splice(start, deleteCount)
 					}
-					await this.KV.put("project:user-${this.props!.login}:list", JSON.stringify(projectList)); // Put the updated project list back to the KV
+					await this.KV.put(`project:user-${this.props!.login}:list`, JSON.stringify(projectList)); // Put the updated project list back to the KV
 
 					return {
 						content: [
